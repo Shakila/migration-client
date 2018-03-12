@@ -68,10 +68,12 @@ public class EventSinkDAO {
         List<EventSink> eventSinks = new ArrayList<>();
         String filePath = EventSinkXmlReader.getTenantDeployementDirectoryPath();
         File[] files = new File(filePath).listFiles();
-        for (File file : files) {
-            if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
-                EventSink eventSink = getEventSinkFromName(file.getName());
-                eventSinks.add(eventSink);
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
+                    EventSink eventSink = getEventSinkFromName(file.getName());
+                    eventSinks.add(eventSink);
+                }
             }
         }
         return eventSinks;

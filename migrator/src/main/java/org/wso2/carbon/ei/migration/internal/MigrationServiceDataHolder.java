@@ -15,7 +15,6 @@
 */
 package org.wso2.carbon.ei.migration.internal;
 
-import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
 
@@ -28,9 +27,6 @@ public class MigrationServiceDataHolder {
 
     //Realm Service which is used to get tenant data.
     private static RealmService realmService;
-
-    //ServerConfiguration Service which is used to get tenant data.
-    private static ServerConfigurationService serverConfigurationService;
 
     /**
      * Method to get RegistryService.
@@ -66,23 +62,5 @@ public class MigrationServiceDataHolder {
      */
     public static void setRealmService(RealmService service) {
         realmService = service;
-    }
-
-    /**
-     * This method used to get RealmService.
-     *
-     * @return serverConfigurationService.
-     */
-    public static ServerConfigurationService getServerConfigurationService() {
-        return serverConfigurationService;
-    }
-
-    /**
-     * Method to set server configuration service.
-     *
-     * @param service ServerConfigurationService.
-     */
-    public static void setServerConfigurationService(ServerConfigurationService service) {
-        serverConfigurationService = service;
     }
 }

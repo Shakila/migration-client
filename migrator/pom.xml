@@ -31,11 +31,6 @@
             <version>${version.commons.logging}</version>
         </dependency>
         <dependency>
-            <groupId>org.wso2.orbit.org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.json.wso2</groupId>
             <artifactId>json</artifactId>
             <version>${json.version}</version>
@@ -64,7 +59,12 @@
         <dependency>
             <groupId>org.wso2.carbon</groupId>
             <artifactId>org.wso2.carbon.ndatasource.core</artifactId>
-            <version>4.4.11</version>
+            <version>${carbon.ndatasource.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon</groupId>
+            <artifactId>org.wso2.carbon.tomcat.ext</artifactId>
+            <version>${carbon.kernel.version}</version>
         </dependency>
     </dependencies>
 
@@ -95,13 +95,13 @@
                         <Import-Package>
                             org.osgi.framework; version="${osgi.framework.imp.pkg.version.range}",
                             org.osgi.service.component; version="${osgi.service.component.imp.pkg.version.range}",
-                            org.apache.commons.logging; version="${version.commons.logging}",
-                            <!--org.wso2.carbon.core.*; version="${carbon.kernel.version}"-->
+                            org.apache.commons.logging; version="${version.commons.logging}"
                         </Import-Package>
                         <DynamicImport-Package>*</DynamicImport-Package>
                         <Export-Package>
                             org.wso2.carbon.core.*; version="${carbon.kernel.version},
-                            org.wso2.carbon.event.sink.*; version="${carbon.mediation.version}
+                            org.wso2.carbon.event.sink.*; version="${carbon.mediation.version},
+                            org.wso2.carbon.tomcat.ext.*; version="${carbon.kernel.version}
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -169,11 +169,12 @@
         <carbon.kernel.version>4.4.23</carbon.kernel.version>
         <version.commons.logging>1.1.1</version.commons.logging>
         <commons.codec.version>1.8</commons.codec.version>
-        <snakeyaml.version>1.16.0.wso2v1</snakeyaml.version>
         <json.version>3.0.0.wso2v1</json.version>
         <osgi.framework.imp.pkg.version.range>[1.7.0, 2.0.0)</osgi.framework.imp.pkg.version.range>
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
         <felix.version>1.12.0</felix.version>
+        <carbon.ndatasource.version>4.4.11</carbon.ndatasource.version>
+        <carbon.deployment.version>4.7.11</carbon.deployment.version>
     </properties>
 
 </project>

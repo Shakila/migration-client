@@ -25,6 +25,8 @@ import org.wso2.carbon.core.internal.CarbonCoreDataHolder;
 import org.wso2.carbon.ei.migration.MigrationClient;
 import org.wso2.carbon.ei.migration.MigrationClientImpl;
 import org.wso2.carbon.registry.core.service.RegistryService;
+import org.wso2.carbon.tomcat.api.CarbonTomcatService;
+import org.wso2.carbon.tomcat.ext.internal.CarbonTomcatServiceHolder;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import static org.mockito.Mockito.mock;
@@ -41,6 +43,9 @@ import static org.mockito.Mockito.mock;
  * @scr.reference name="serverconfiguration.service"
  * interface="org.wso2.carbon.base.api.ServerConfigurationService" cardinality="1..1"
  * policy="dynamic" bind="setServerConfigurationService" unbind="unsetServerConfigurationService"
+ * @scr.reference name="carbontomcat.service"
+ * interface="org.wso2.carbon.tomcat.api.CarbonTomcatService" cardinality="1..1"
+ * policy="dynamic" bind="setCarbonTomcatService" unbind="unsetCarbonTomcatService"
  */
 public class MigrationServiceComponent {
 
@@ -131,6 +136,7 @@ public class MigrationServiceComponent {
             log.debug("Unsetting RegistryService from WSO2 EI Config component");
         }
         MigrationServiceDataHolder.setRegistryService(null);
+        CarbonCoreDataHolder.getInstance().setRegistryService(null);
     }
 
     /**
@@ -142,7 +148,6 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting ServerConfigurationService to WSO2 EI Config component");
         }
-        MigrationServiceDataHolder.setServerConfigurationService(serverConfigurationService);
         CarbonCoreDataHolder.getInstance().setServerConfigurationService(serverConfigurationService);
     }
 
@@ -155,6 +160,29 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Unsetting ServerConfigurationService from WSO2 EI Config component");
         }
-        MigrationServiceDataHolder.setServerConfigurationService(null);
+        CarbonCoreDataHolder.getInstance().setServerConfigurationService(null);
+    }
+    /**
+     * Method to set carbon tomcat service.
+     *
+     * @param carbonTomcatService service to get tenant data.
+     */
+    protected void setCarbonTomcatService(CarbonTomcatService carbonTomcatService) {
+        if (log.isDebugEnabled()) {
+            log.debug("Setting CarbonTomcatService to WSO2 EI Config component");
+        }
+        CarbonTomcatServiceHolder.setCarbonTomcatService(carbonTomcatService);
+    }
+
+    /**
+     * Method to unset carbon tomcat service.
+     *
+     * @param carbonTomcatService service to get tenant data.
+     */
+    protected void unsetCarbonTomcatService(CarbonTomcatService carbonTomcatService) {
+        if (log.isDebugEnabled()) {
+            log.debug("Unsetting CarbonTomcatService from WSO2 EI Config component");
+        }
+        CarbonTomcatServiceHolder.setCarbonTomcatService(null);
     }
 }

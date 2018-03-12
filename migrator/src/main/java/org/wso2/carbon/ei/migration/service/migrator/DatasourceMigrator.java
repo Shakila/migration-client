@@ -54,7 +54,7 @@ public class DatasourceMigrator extends Migrator {
 
     @Override
     public void migrate() throws MigrationClientException {
-        transformDatasourcePasswordInFileSystem();
+        transformDataSourcePasswordInFileSystem();
         transformPasswordInRegistryDatasources();
     }
 
@@ -62,7 +62,7 @@ public class DatasourceMigrator extends Migrator {
      * This method will transform the data source password encrypted with old encryption algorithm to new encryption
      * algorithm.
      */
-    public void transformDatasourcePasswordInFileSystem() throws MigrationClientException {
+    public void transformDataSourcePasswordInFileSystem() throws MigrationClientException {
         String carbonHome = System.getProperty(Constant.CARBON_HOME);
         String datasourcePath = Paths.get(carbonHome,
                 new String[]{"conf", "datasources"}).toString();
@@ -93,7 +93,7 @@ public class DatasourceMigrator extends Migrator {
             for (Tenant tenant : tenants) {
                 int tenantId = tenant.getId();
                 List<Resource> dataSources = DataSourceDAO.getInstance().getAllDataSources(tenantId);
-                this.updatePasswordInRegistryDatasources(tenantId, dataSources);
+                this.updatePasswordInRegistryDataSources(tenantId, dataSources);
             }
         } catch (Exception e) {
             log.error("Error while updating secondary data source password for tenant", e);
@@ -101,13 +101,13 @@ public class DatasourceMigrator extends Migrator {
         //In super tenant
         try {
             List<Resource> dataSources = DataSourceDAO.getInstance().getAllDataSources(Constant.SUPER_TENANT_ID);
-            this.updatePasswordInRegistryDatasources(Constant.SUPER_TENANT_ID, dataSources);
+            this.updatePasswordInRegistryDataSources(Constant.SUPER_TENANT_ID, dataSources);
         } catch (Exception e) {
             log.error("Error while updating secondary user store password for super tenant", e);
         }
     }
 
-    private void updatePasswordInRegistryDatasources(int tenantId, List<Resource> dataSources) throws MigrationClientException {
+    private void updatePasswordInRegistryDataSources(int tenantId, List<Resource> dataSources) throws MigrationClientException {
 
         for (Resource dataSource : dataSources) {
             try {

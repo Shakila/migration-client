@@ -70,9 +70,11 @@ public class EntitlementMediatorMigrator extends Migrator {
             HashMap<String, File[]> filesMap = EntitlementMediatorDAO.getInstance().getEMConfigFiles(Constant.SUPER_TENANT_ID);
             for (Map.Entry entry : filesMap.entrySet()) {
                 File[] emConfigs = (File[]) entry.getValue();
-                for (File file : emConfigs) {
-                    if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
-                        transformEMPassword(file.getAbsolutePath());
+                if (emConfigs != null) {
+                    for (File file : emConfigs) {
+                        if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
+                            transformEMPassword(file.getAbsolutePath());
+                        }
                     }
                 }
             }
@@ -85,13 +87,21 @@ public class EntitlementMediatorMigrator extends Migrator {
         Tenant[] tenants;
         try {
             tenants = MigrationServiceDataHolder.getRealmService().getTenantManager().getAllTenants();
+            boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty("ignoreInactiveTenants"));
             for (Tenant tenant : tenants) {
+                if (isIgnoreForInactiveTenants && !tenant.isActive()) {
+                    log.info("Tenant " + tenant.getDomain() + " is inactive. Skipping secondary userstore migration!");
+                    continue;
+                }
+
                 HashMap<String, File[]> filesMap = EntitlementMediatorDAO.getInstance().getEMConfigFiles(tenant.getId());
                 for (Map.Entry entry : filesMap.entrySet()) {
                     File[] emConfigs = (File[]) entry.getValue();
-                    for (File file : emConfigs) {
-                        if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
-                            transformEMPassword(file.getAbsolutePath());
+                    if (emConfigs != null) {
+                        for (File file : emConfigs) {
+                            if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
+                                transformEMPassword(file.getAbsolutePath());
+                            }
                         }
                     }
                 }

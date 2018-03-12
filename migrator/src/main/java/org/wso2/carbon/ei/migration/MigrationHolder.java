@@ -15,10 +15,9 @@
 */
 package org.wso2.carbon.ei.migration;
 
+import org.wso2.carbon.ei.migration.service.KeyStorePasswordMigrator;
 import org.wso2.carbon.ei.migration.service.Migrator;
-import org.wso2.carbon.ei.migration.service.migrator.DatasourceMigrator;
-import org.wso2.carbon.ei.migration.service.migrator.EntitlementMediatorMigrator;
-import org.wso2.carbon.ei.migration.service.migrator.EventSinkMigrator;
+import org.wso2.carbon.ei.migration.service.migrator.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +32,12 @@ public class MigrationHolder {
 
 
     private MigrationHolder() {
+        migrationList.add(new KeyStorePasswordMigrator());
         migrationList.add(new DatasourceMigrator());
         migrationList.add(new EntitlementMediatorMigrator());
         migrationList.add(new EventSinkMigrator());
+        migrationList.add(new SysLogPropertiesMigrator());
+        migrationList.add(new UserStorePasswordMigrator());
     }
 
     public static MigrationHolder getInstance() {

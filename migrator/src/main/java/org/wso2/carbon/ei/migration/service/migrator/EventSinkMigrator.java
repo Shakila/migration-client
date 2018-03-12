@@ -47,10 +47,12 @@ public class EventSinkMigrator extends Migrator {
 
         log.info(Constant.MIGRATION_LOG + "Password transformation starting on Event Sink.");
 
-        List<EventSink> eventSinksList = null;
+        List<EventSink> eventSinksList;
         try {
             eventSinksList = EventSinkDAO.getInstance().getAllEventSinks();
-            this.transformPasswordFromOldToNewEncryption(eventSinksList);
+            if (eventSinksList.size() > 0) {
+                this.transformPasswordFromOldToNewEncryption(eventSinksList);
+            }
         } catch (EventSinkException e) {
             throw new MigrationClientException("Password transformation failed with ERROR: " + e);
         }

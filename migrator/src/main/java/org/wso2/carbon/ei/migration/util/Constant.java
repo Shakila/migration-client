@@ -25,7 +25,6 @@ public class Constant {
     public static final String MIGRATION_LOG = " WSO2 Product Migration Service Task : ";
     public static final String CARBON_HOME = "carbon.home";
     public static final int SUPER_TENANT_ID = -1234;
-    public static final String MIGRATION_CONFIG_FILE_NAME = "migration-config.yaml";
     public static final String MIGRATION_RESOURCE_HOME = "migration-resources";
     public static final String EM_ENCRYPTED_PASSWORD_PREFIX = "enc:";
     public static final QName TARGET_Q = new QName("target");
