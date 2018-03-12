@@ -1,0 +1,4 @@
+migrationEnable: "true"
+
+continueOnError: "true"
+ignoreForInactiveTenants: "true"
