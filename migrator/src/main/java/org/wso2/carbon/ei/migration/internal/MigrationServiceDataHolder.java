@@ -15,7 +15,11 @@
 */
 package org.wso2.carbon.ei.migration.internal;
 
+import org.apache.axis2.context.ConfigurationContext;
+import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.registry.core.service.RegistryService;
+import org.wso2.carbon.service.mgt.internal.DataHolder;
+import org.wso2.carbon.tomcat.api.CarbonTomcatService;
 import org.wso2.carbon.user.core.service.RealmService;
 
 /**
@@ -27,6 +31,12 @@ public class MigrationServiceDataHolder {
 
     //Realm Service which is used to get tenant data.
     private static RealmService realmService;
+
+//    private static ConfigurationContext configurationContext;
+
+    private static ServerConfigurationService serverConfigurationService;
+
+    private static CarbonTomcatService carbonTomcatService;
 
     /**
      * Method to get RegistryService.
@@ -62,5 +72,22 @@ public class MigrationServiceDataHolder {
      */
     public static void setRealmService(RealmService service) {
         realmService = service;
+    }
+
+
+    public static ServerConfigurationService getServerConfigurationService() {
+        return serverConfigurationService;
+    }
+
+    public static void setServerConfigurationService(ServerConfigurationService serverConfigurationService) {
+        MigrationServiceDataHolder.serverConfigurationService = serverConfigurationService;
+    }
+
+    public static CarbonTomcatService getCarbonTomcatService() {
+        return carbonTomcatService;
+    }
+
+    public static void setCarbonTomcatService(CarbonTomcatService carbonTomcatService) {
+        MigrationServiceDataHolder.carbonTomcatService = carbonTomcatService;
     }
 }

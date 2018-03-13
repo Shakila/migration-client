@@ -20,9 +20,10 @@ import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.core.internal.CarbonCoreDataHolder;
+//import org.wso2.carbon.core.internal.CarbonCoreDataHolder;
 import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.core.util.CryptoUtil;
+import org.wso2.carbon.ei.migration.internal.MigrationServiceDataHolder;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -51,28 +52,27 @@ public class Utility {
     }
 
     public static String getNewEncryptedValue(String encryptedValue) throws CryptoException {
-        if (StringUtils.isNotEmpty(encryptedValue) && !isNewlyEncrypted(encryptedValue) && isEncryptedByRSA(encryptedValue)) {
-            byte[] decryptedPassword = CryptoUtil.getDefaultCryptoUtil().base64DecodeAndDecrypt(encryptedValue, Constant.RSA);
-            return CryptoUtil.getDefaultCryptoUtil().encryptAndBase64Encode(decryptedPassword);
+        CryptoUtil cryptoUtil = getDefaultCryptoUtil();
+        if (StringUtils.isNotEmpty(encryptedValue) && !isNewlyEncrypted(cryptoUtil, encryptedValue)
+                && isEncryptedByRSA(cryptoUtil, encryptedValue)) {
+            byte[] decryptedPassword = cryptoUtil.base64DecodeAndDecrypt(encryptedValue, Constant.RSA);
+            return cryptoUtil.encryptAndBase64Encode(decryptedPassword);
         }
         return null;
     }
 
-    public static boolean isNewlyEncrypted(String encryptedValue) throws CryptoException {
-        CryptoUtil cryptoUtil = null;
-        try {
-            cryptoUtil = CryptoUtil.getDefaultCryptoUtil(CarbonCoreDataHolder.getInstance().getServerConfigurationService(),
-                    CarbonCoreDataHolder.getInstance().getRegistryService());
-        } catch (Exception e) {
-            new CryptoException(e.getMessage());
-        }
+    public static boolean isNewlyEncrypted(CryptoUtil cryptoUtil, String encryptedValue) throws CryptoException {
         return cryptoUtil.base64DecodeAndIsSelfContainedCipherText(encryptedValue);
     }
 
-    public static boolean isEncryptedByRSA(String password) throws CryptoException {
-        return password.equals(CryptoUtil.getDefaultCryptoUtil().encryptAndBase64Encode(CryptoUtil.getDefaultCryptoUtil()
-                        .base64DecodeAndDecrypt(password, Constant.RSA)
+    public static boolean isEncryptedByRSA(CryptoUtil cryptoUtil, String password) throws CryptoException {
+        return password.equals(cryptoUtil.encryptAndBase64Encode(cryptoUtil.base64DecodeAndDecrypt(password, Constant.RSA)
                 , Constant.RSA, false));
     }
 
+    public static CryptoUtil getDefaultCryptoUtil() {
+        CryptoUtil cryptoUtil = CryptoUtil.getDefaultCryptoUtil(MigrationServiceDataHolder.getServerConfigurationService(),
+                MigrationServiceDataHolder.getRegistryService());
+        return cryptoUtil;
+    }
 }

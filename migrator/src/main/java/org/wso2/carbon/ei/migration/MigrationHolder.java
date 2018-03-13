@@ -15,7 +15,7 @@
 */
 package org.wso2.carbon.ei.migration;
 
-import org.wso2.carbon.ei.migration.service.KeyStorePasswordMigrator;
+import org.wso2.carbon.ei.migration.service.migrator.KeyStorePasswordMigrator;
 import org.wso2.carbon.ei.migration.service.Migrator;
 import org.wso2.carbon.ei.migration.service.migrator.*;
 
@@ -32,10 +32,12 @@ public class MigrationHolder {
 
 
     private MigrationHolder() {
-        migrationList.add(new KeyStorePasswordMigrator());
         migrationList.add(new DatasourceMigrator());
         migrationList.add(new EntitlementMediatorMigrator());
         migrationList.add(new EventSinkMigrator());
+        migrationList.add(new InputOutputDataMigration());
+        migrationList.add(new KeyStorePasswordMigrator());
+        migrationList.add(new SecurityPolicyPasswordMigrator());
         migrationList.add(new SysLogPropertiesMigrator());
         migrationList.add(new UserStorePasswordMigrator());
     }

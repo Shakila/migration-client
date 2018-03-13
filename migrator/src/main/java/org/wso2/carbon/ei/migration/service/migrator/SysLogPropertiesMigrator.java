@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.ei.migration.MigrationClientException;
-import org.wso2.carbon.ei.migration.RegistryDataManager;
+import org.wso2.carbon.ei.migration.service.RegistryDataManager;
 import org.wso2.carbon.ei.migration.service.Migrator;
 import org.wso2.carbon.ei.migration.util.Constant;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
@@ -36,7 +36,7 @@ public class SysLogPropertiesMigrator extends Migrator {
 
     private void migrateSysLogPropertiesPassword() throws MigrationClientException {
         log.info(Constant.MIGRATION_LOG + "Migration starting on SYSLOG_PROPERTIES file");
-        boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty("ignoreInactiveTenants"));
+        boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));
         try {
             RegistryDataManager.getInstance().migrateSysLogPropertyPassword(isIgnoreForInactiveTenants);
         } catch (UserStoreException e) {

@@ -15,12 +15,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.ei.migration.service;
+package org.wso2.carbon.ei.migration.service.migrator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.ei.migration.MigrationClientException;
-import org.wso2.carbon.ei.migration.RegistryDataManager;
+import org.wso2.carbon.ei.migration.service.Migrator;
+import org.wso2.carbon.ei.migration.service.RegistryDataManager;
 import org.wso2.carbon.ei.migration.util.Constant;
 
 public class KeyStorePasswordMigrator extends Migrator {
@@ -40,7 +41,7 @@ public class KeyStorePasswordMigrator extends Migrator {
     private void migrateKeystorePasswords() throws Exception {
 
         log.info(Constant.MIGRATION_LOG + "Migration starting on Key Stores");
-        boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty("ignoreInactiveTenants"));
+        boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));
         RegistryDataManager registryDataManager = RegistryDataManager.getInstance();
         registryDataManager.migrateKeyStorePassword(isIgnoreForInactiveTenants);
     }

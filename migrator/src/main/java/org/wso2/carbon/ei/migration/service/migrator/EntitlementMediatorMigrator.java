@@ -47,6 +47,7 @@ import java.util.Map;
  */
 public class EntitlementMediatorMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(EntitlementMediatorMigrator.class);
+    private boolean isModified = false;
 
     @Override
     public void migrate() throws MigrationClientException {
@@ -87,7 +88,7 @@ public class EntitlementMediatorMigrator extends Migrator {
         Tenant[] tenants;
         try {
             tenants = MigrationServiceDataHolder.getRealmService().getTenantManager().getAllTenants();
-            boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty("ignoreInactiveTenants"));
+            boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));
             for (Tenant tenant : tenants) {
                 if (isIgnoreForInactiveTenants && !tenant.isActive()) {
                     log.info("Tenant " + tenant.getDomain() + " is inactive. Skipping secondary userstore migration!");
@@ -112,6 +113,7 @@ public class EntitlementMediatorMigrator extends Migrator {
     }
 
     private void transformEMPassword(String filePath) throws MigrationClientException {
+        isModified = false;
         XMLStreamReader parser = null;
         FileInputStream stream = null;
         try {
@@ -120,45 +122,13 @@ public class EntitlementMediatorMigrator extends Migrator {
             parser = XMLInputFactory.newInstance().createXMLStreamReader(stream);
             StAXOMBuilder builder = new StAXOMBuilder(parser);
             OMElement documentElement = builder.getDocumentElement();
-            Iterator it = null;
-            String str = filePath.substring(0, filePath.lastIndexOf(File.separator));
-            String artifactType = str.substring(str.lastIndexOf(File.separator) + 1);
-            if ("api".equals(artifactType)) {
-                it = ((OMElement) ((OMElement) documentElement.getChildrenWithName(Constant.RESOURCE_Q).next())
-                        .getChildrenWithName(Constant.IN_SEQUENCE_Q).next())
-                        .getChildrenWithName(Constant.ENTITLEMENT_SERVICE_Q);
-            } else if ("proxy-services".equals(artifactType)) {
-                it = ((OMElement) ((OMElement) documentElement.getChildrenWithName(Constant.TARGET_Q).next())
-                        .getChildrenWithName(Constant.IN_SEQUENCE_Q).next())
-                        .getChildrenWithName(Constant.ENTITLEMENT_SERVICE_Q);
-            } else if ("sequences".equals(artifactType)) {
-                it = documentElement.getChildrenWithName(Constant.ENTITLEMENT_SERVICE_Q);
-            } else if ("templates".equals(artifactType)) {
-                it = ((OMElement) documentElement.getChildrenWithName(Constant.SEQUENCE_Q).next())
-                        .getChildrenWithName(Constant.ENTITLEMENT_SERVICE_Q);
-            }
-            String newEncryptedPassword = null;
-            while (it.hasNext()) {
-                OMElement element = (OMElement) it.next();
-                String remoteServicePassword = element.getAttributeValue(Constant.REMOTE_SERVICE_PASSWORD_Q);
-                if (remoteServicePassword.startsWith(Constant.EM_ENCRYPTED_PASSWORD_PREFIX)) {
-                    newEncryptedPassword = Utility.getNewEncryptedValue(remoteServicePassword
-                            .replace(Constant.EM_ENCRYPTED_PASSWORD_PREFIX, ""));
-                    if (StringUtils.isNotEmpty(newEncryptedPassword)) {
-                        element.getAttribute(Constant.REMOTE_SERVICE_PASSWORD_Q)
-                                .setAttributeValue(Constant.EM_ENCRYPTED_PASSWORD_PREFIX + newEncryptedPassword);
-                    }
-                }
-            }
-
-            if (newEncryptedPassword != null) {
+            loopAndEncrypt(documentElement.getChildElements());
+            if (isModified) {
                 OutputStream outputStream = new FileOutputStream(filePath);
                 documentElement.serialize(outputStream);
             }
         } catch (XMLStreamException | FileNotFoundException e) {
             new MigrationClientException("Error while writing the file: " + e);
-        } catch (CryptoException e) {
-            new MigrationClientException(e.getMessage());
         } finally {
             try {
                 if (parser != null) {
@@ -177,5 +147,31 @@ public class EntitlementMediatorMigrator extends Migrator {
                 log.error("Error while closing XML stream", ex);
             }
         }
+    }
+
+    private boolean loopAndEncrypt(Iterator it) throws MigrationClientException {
+        while (it.hasNext()) {
+            OMElement element = (OMElement) it.next();
+            if (element.getAttributeValue(Constant.REMOTE_SERVICE_PASSWORD_Q) != null
+                    && element.getAttributeValue(Constant.REMOTE_SERVICE_PASSWORD_Q)
+                    .startsWith(Constant.EM_ENCRYPTED_PASSWORD_PREFIX)) {
+                String remoteServicePassword = element.getAttributeValue(Constant.REMOTE_SERVICE_PASSWORD_Q);
+                String newEncryptedPassword;
+                try {
+                    newEncryptedPassword = Utility.getNewEncryptedValue(
+                            remoteServicePassword.replace(Constant.EM_ENCRYPTED_PASSWORD_PREFIX, ""));
+                    if (StringUtils.isNotEmpty(newEncryptedPassword)) {
+                        element.getAttribute(Constant.REMOTE_SERVICE_PASSWORD_Q)
+                                .setAttributeValue(Constant.EM_ENCRYPTED_PASSWORD_PREFIX + newEncryptedPassword);
+                        isModified = true;
+                    }
+                } catch (CryptoException e) {
+                    new MigrationClientException(e.getMessage());
+                }
+            } else if (element.getChildElements().hasNext()) {
+                loopAndEncrypt(element.getChildElements());
+            }
+        }
+        return isModified;
     }
 }

@@ -56,7 +56,7 @@ public class MigrationClientImpl implements MigrationClient {
             }
             log.info(Constant.MIGRATION_LOG + "Execution was done.");
         } catch (Throwable e) {
-            log.error("Migration process was stopped.", e);
+            log.error("Migration process was stopped." + e.getMessage(), e);
         }
 
         log.info("............................................................................................");

@@ -18,19 +18,14 @@ package org.wso2.carbon.ei.migration.internal;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 import org.wso2.carbon.base.api.ServerConfigurationService;
-import org.wso2.carbon.core.internal.CarbonCoreDataHolder;
 import org.wso2.carbon.ei.migration.MigrationClient;
 import org.wso2.carbon.ei.migration.MigrationClientImpl;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.tomcat.api.CarbonTomcatService;
-import org.wso2.carbon.tomcat.ext.internal.CarbonTomcatServiceHolder;
+import org.apache.axis2.context.ConfigurationContext;
 import org.wso2.carbon.user.core.service.RealmService;
-
-import static org.mockito.Mockito.mock;
-
 
 /**
  * @scr.component name="org.wso2.carbon.ei.migration.internal" immediate="true"
@@ -50,6 +45,7 @@ import static org.mockito.Mockito.mock;
 public class MigrationServiceComponent {
 
     private static final Log log = LogFactory.getLog(MigrationServiceComponent.class);
+    private ConfigurationContext configCtx;
 
     /**
      * Method to activate bundle.
@@ -58,9 +54,6 @@ public class MigrationServiceComponent {
      */
     protected void activate(ComponentContext context) {
         try {
-            BundleContext bundleContext = context.getBundleContext();
-            bundleContext.registerService(MigrationClient.class, new MigrationClientImpl(), null);
-
             // if -Dmigrate option is used.
             String migrate = System.getProperty("migrate");
             if (Boolean.parseBoolean(migrate)) {
@@ -123,7 +116,7 @@ public class MigrationServiceComponent {
             log.debug("Setting RegistryService to WSO2 EI Config component");
         }
         MigrationServiceDataHolder.setRegistryService(registryService);
-        CarbonCoreDataHolder.getInstance().setRegistryService(registryService);
+//        CarbonCoreDataHolder.getInstance().setRegistryService(registryService);
     }
 
     /**
@@ -136,7 +129,7 @@ public class MigrationServiceComponent {
             log.debug("Unsetting RegistryService from WSO2 EI Config component");
         }
         MigrationServiceDataHolder.setRegistryService(null);
-        CarbonCoreDataHolder.getInstance().setRegistryService(null);
+//        CarbonCoreDataHolder.getInstance().setRegistryService(null);
     }
 
     /**
@@ -148,7 +141,8 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting ServerConfigurationService to WSO2 EI Config component");
         }
-        CarbonCoreDataHolder.getInstance().setServerConfigurationService(serverConfigurationService);
+//        CarbonCoreDataHolder.getInstance().setServerConfigurationService(serverConfigurationService);
+        MigrationServiceDataHolder.setServerConfigurationService(serverConfigurationService);
     }
 
     /**
@@ -160,7 +154,8 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Unsetting ServerConfigurationService from WSO2 EI Config component");
         }
-        CarbonCoreDataHolder.getInstance().setServerConfigurationService(null);
+//        CarbonCoreDataHolder.getInstance().setServerConfigurationService(null);
+        MigrationServiceDataHolder.setServerConfigurationService(null);
     }
     /**
      * Method to set carbon tomcat service.
@@ -171,7 +166,8 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting CarbonTomcatService to WSO2 EI Config component");
         }
-        CarbonTomcatServiceHolder.setCarbonTomcatService(carbonTomcatService);
+//        CarbonTomcatServiceHolder.setCarbonTomcatService(carbonTomcatService);
+        MigrationServiceDataHolder.setCarbonTomcatService(carbonTomcatService);
     }
 
     /**
@@ -183,6 +179,7 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Unsetting CarbonTomcatService from WSO2 EI Config component");
         }
-        CarbonTomcatServiceHolder.setCarbonTomcatService(null);
+//        CarbonTomcatServiceHolder.setCarbonTomcatService(null);
+        MigrationServiceDataHolder.setCarbonTomcatService(null);
     }
 }

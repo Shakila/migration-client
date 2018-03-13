@@ -34,7 +34,12 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.Iterator;
 
@@ -53,7 +58,7 @@ public class UserStorePasswordMigrator extends Migrator {
         Tenant[] tenants;
         try {
             tenants = MigrationServiceDataHolder.getRealmService().getTenantManager().getAllTenants();
-            boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty("ignoreInactiveTenants"));
+            boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));
             for (Tenant tenant : tenants) {
                 if (isIgnoreForInactiveTenants && !tenant.isActive()) {
                     log.info("Tenant " + tenant.getDomain() + " is inactive. Skipping secondary userstore migration!");
