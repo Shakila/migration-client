@@ -29,7 +29,7 @@ public class SecurityPolicyPasswordMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(SecurityPolicyPasswordMigrator.class);
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
 
         log.info(Constant.MIGRATION_LOG + "Migration starting on Security Policies");
         RegistryDataManager registryDataManager = RegistryDataManager.getInstance();

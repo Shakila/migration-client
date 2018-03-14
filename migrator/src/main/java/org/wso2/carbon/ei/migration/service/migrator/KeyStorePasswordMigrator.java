@@ -29,16 +29,11 @@ public class KeyStorePasswordMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(KeyStorePasswordMigrator.class);
 
     @Override
-    public void migrate() throws MigrationClientException {
-        try {
+    public void migrate() {
             migrateKeystorePasswords();
-        } catch (Exception e) {
-            String errorMsg = "Error while migrating key store passwords";
-            throw new MigrationClientException(errorMsg, e);
-        }
     }
 
-    private void migrateKeystorePasswords() throws Exception {
+    private void migrateKeystorePasswords() {
 
         log.info(Constant.MIGRATION_LOG + "Migration starting on Key Stores");
         boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));

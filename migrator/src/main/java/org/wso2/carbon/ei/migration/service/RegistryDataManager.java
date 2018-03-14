@@ -54,7 +54,8 @@ public class RegistryDataManager {
 
     private static RegistryDataManager instance = new RegistryDataManager();
 
-    private RegistryDataManager(){}
+    private RegistryDataManager() {
+    }
 
     public static RegistryDataManager getInstance() {
         return instance;
@@ -72,36 +73,28 @@ public class RegistryDataManager {
      * Method to migrate encrypted password of key stores
      *
      * @param migrateActiveTenantsOnly
-     * @throws Exception
      */
-    public void migrateKeyStorePassword(boolean migrateActiveTenantsOnly) throws Exception {
-
-        //migrating super tenant configurations
+    public void migrateKeyStorePassword(boolean migrateActiveTenantsOnly) {
         try {
+            //migrating super tenant configurations
             migrateKeyStorePasswordForTenant(SUPER_TENANT_ID);
             log.info("Keystore passwords migrated for tenant : " + SUPER_TENANT_DOMAIN_NAME);
-        } catch (Exception e) {
-            log.error("Error while migrating Keystore passwords for tenant : " + SUPER_TENANT_DOMAIN_NAME);
-            throw e;
-        }
 
-        //migrating tenant configurations
-        Tenant[] tenants = MigrationServiceDataHolder.getRealmService().getTenantManager().getAllTenants();
-        for (Tenant tenant : tenants) {
-            if (migrateActiveTenantsOnly && !tenant.isActive()) {
-                log.info("Tenant " + tenant.getDomain() + " is inactive. Skipping Subscriber migration!");
-                continue;
-            }
-            try {
+            //migrating tenant configurations
+            Tenant[] tenants = MigrationServiceDataHolder.getRealmService().getTenantManager().getAllTenants();
+            for (Tenant tenant : tenants) {
+                if (migrateActiveTenantsOnly && !tenant.isActive()) {
+                    log.info("Tenant " + tenant.getDomain() + " is inactive. Skipping Subscriber migration!");
+                    continue;
+                }
                 startTenantFlow(tenant);
                 migrateKeyStorePasswordForTenant(tenant.getId());
                 log.info("Keystore passwords migrated for tenant : " + tenant.getDomain());
-            } catch (Exception e) {
-                log.error("Error while migrating keystore passwords for tenant : " + tenant.getDomain());
-                throw e;
-            } finally {
-                PrivilegedCarbonContext.endTenantFlow();
             }
+        } catch (RegistryException | CryptoException e) {
+            log.error("Error while migrating keystore passwords for tenant");
+        } catch (UserStoreException e) {
+            log.error("Error while getting tenants");
         }
     }
 
@@ -109,13 +102,12 @@ public class RegistryDataManager {
      * Method to migrate encrypted password of SYSLOG_PROPERTIES registry resource
      *
      * @param migrateActiveTenantsOnly
-     * @throws UserStoreException
+     * @throws UserStoreException user store exception
      */
     public void migrateSysLogPropertyPassword(boolean migrateActiveTenantsOnly)
             throws UserStoreException, RegistryException, CryptoException {
-
-        //migrating super tenant configurations
         try {
+            //migrating super tenant configurations
             migrateSysLogPropertyPasswordForTenant(SUPER_TENANT_ID);
             log.info("Sys log property password migrated for tenant : " + SUPER_TENANT_DOMAIN_NAME);
         } catch (Exception e) {
@@ -191,7 +183,7 @@ public class RegistryDataManager {
         }
     }
 
-    private void updateSecurityPolicyPassword (int tenantId) throws RegistryException, CryptoException,
+    private void updateSecurityPolicyPassword(int tenantId) throws RegistryException, CryptoException,
             XMLStreamException {
 
         InputStream resourceContent = null;
@@ -240,17 +232,16 @@ public class RegistryDataManager {
             }
         } finally {
             try {
-                if(parser != null) {
+                if (parser != null) {
                     parser.close();
                 }
-                if(resourceContent != null) {
+                if (resourceContent != null) {
                     try {
-                        if (resourceContent != null) {
-                            resourceContent.close();
-                        }
+                        resourceContent.close();
                     } catch (IOException e) {
                         log.error("Error occurred while closing Input stream", e);
-                    }                }
+                    }
+                }
             } catch (XMLStreamException ex) {
                 log.error("Error while closing XML stream", ex);
             }
@@ -290,10 +281,10 @@ public class RegistryDataManager {
 
         List<String> policyPaths = new ArrayList<>();
         if (registry.resourceExists(Constant.SERVICE_GROUPS_PATH)) {
-            Collection serviceGroups = (Collection)registry.get(Constant.SERVICE_GROUPS_PATH);
+            Collection serviceGroups = (Collection) registry.get(Constant.SERVICE_GROUPS_PATH);
             if (serviceGroups != null) {
                 for (String serviceGroupPath : serviceGroups.getChildren()) {
-                    if ( StringUtils.isNotEmpty(serviceGroupPath) &&
+                    if (StringUtils.isNotEmpty(serviceGroupPath) &&
                             serviceGroupPath.contains(Constant.STS_SERVICE_GROUP)) {
                         String policyCollectionPath = new StringBuilder().append(serviceGroupPath)
                                 .append(Constant.SECURITY_POLICY_RESOURCE_PATH).toString();

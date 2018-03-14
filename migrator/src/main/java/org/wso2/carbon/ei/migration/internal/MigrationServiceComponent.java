@@ -116,7 +116,6 @@ public class MigrationServiceComponent {
             log.debug("Setting RegistryService to WSO2 EI Config component");
         }
         MigrationServiceDataHolder.setRegistryService(registryService);
-//        CarbonCoreDataHolder.getInstance().setRegistryService(registryService);
     }
 
     /**
@@ -129,7 +128,6 @@ public class MigrationServiceComponent {
             log.debug("Unsetting RegistryService from WSO2 EI Config component");
         }
         MigrationServiceDataHolder.setRegistryService(null);
-//        CarbonCoreDataHolder.getInstance().setRegistryService(null);
     }
 
     /**
@@ -141,7 +139,6 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting ServerConfigurationService to WSO2 EI Config component");
         }
-//        CarbonCoreDataHolder.getInstance().setServerConfigurationService(serverConfigurationService);
         MigrationServiceDataHolder.setServerConfigurationService(serverConfigurationService);
     }
 
@@ -154,7 +151,6 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Unsetting ServerConfigurationService from WSO2 EI Config component");
         }
-//        CarbonCoreDataHolder.getInstance().setServerConfigurationService(null);
         MigrationServiceDataHolder.setServerConfigurationService(null);
     }
     /**
@@ -166,7 +162,6 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Setting CarbonTomcatService to WSO2 EI Config component");
         }
-//        CarbonTomcatServiceHolder.setCarbonTomcatService(carbonTomcatService);
         MigrationServiceDataHolder.setCarbonTomcatService(carbonTomcatService);
     }
 
@@ -179,7 +174,6 @@ public class MigrationServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("Unsetting CarbonTomcatService from WSO2 EI Config component");
         }
-//        CarbonTomcatServiceHolder.setCarbonTomcatService(null);
         MigrationServiceDataHolder.setCarbonTomcatService(null);
     }
 }

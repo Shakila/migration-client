@@ -32,8 +32,6 @@ public class MigrationServiceDataHolder {
     //Realm Service which is used to get tenant data.
     private static RealmService realmService;
 
-//    private static ConfigurationContext configurationContext;
-
     private static ServerConfigurationService serverConfigurationService;
 
     private static CarbonTomcatService carbonTomcatService;
@@ -74,19 +72,38 @@ public class MigrationServiceDataHolder {
         realmService = service;
     }
 
-
+    /**
+     * This method used to get ServerConfigurationService.
+     *
+     * @return ServerConfigurationService.
+     */
     public static ServerConfigurationService getServerConfigurationService() {
         return serverConfigurationService;
     }
 
+    /**
+     * Method to set server configuration service.
+     *
+     * @param serverConfigurationService RealmService.
+     */
     public static void setServerConfigurationService(ServerConfigurationService serverConfigurationService) {
         MigrationServiceDataHolder.serverConfigurationService = serverConfigurationService;
     }
 
+    /**
+     * This method used to get CarbonTomcatService.
+     *
+     * @return CarbonTomcatService.
+     */
     public static CarbonTomcatService getCarbonTomcatService() {
         return carbonTomcatService;
     }
 
+    /**
+     * Method to set carbon tomcat service.
+     *
+     * @param carbonTomcatService CarbonTomcatService.
+     */
     public static void setCarbonTomcatService(CarbonTomcatService carbonTomcatService) {
         MigrationServiceDataHolder.carbonTomcatService = carbonTomcatService;
     }

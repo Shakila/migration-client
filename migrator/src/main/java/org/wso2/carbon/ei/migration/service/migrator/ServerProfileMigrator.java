@@ -15,45 +15,36 @@
 */
 package org.wso2.carbon.ei.migration.service.migrator;
 
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.impl.builder.StAXOMBuilder;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.ei.migration.MigrationClientException;
-import org.wso2.carbon.ei.migration.internal.MigrationServiceDataHolder;
 import org.wso2.carbon.ei.migration.service.Migrator;
+import org.wso2.carbon.ei.migration.service.dao.ServerProfileDAO;
 import org.wso2.carbon.ei.migration.util.Constant;
 import org.wso2.carbon.ei.migration.util.Utility;
-import org.wso2.carbon.user.api.Tenant;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.*;
-import java.util.Iterator;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
- * Password transformation class for Entitlement mediator.
+ * Password transformation class for server profile.
  */
 public class ServerProfileMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(ServerProfileMigrator.class);
-    private boolean isModified = false;
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         transformPasswordInAllServerProfiles();
     }
 
     /**
-     * This method will transform the Entitlement Mediator password encrypted with old encryption algorithm to new encryption
+     * This method will transform the server profile password encrypted with old encryption algorithm to new encryption
      * algorithm.
      *
-     * @throws MigrationClientException
      */
-    private void transformPasswordInAllServerProfiles() throws MigrationClientException {
-        log.info(Constant.MIGRATION_LOG + "Migration starting on Entitlement Mediators.");
+    private void transformPasswordInAllServerProfiles() {
+        log.info(Constant.MIGRATION_LOG + "Migration starting on Server Profiles.");
         updateSuperTenantConfigs();
         updateTenantConfigs();
     }
@@ -61,30 +52,75 @@ public class ServerProfileMigrator extends Migrator {
     private void updateSuperTenantConfigs() {
         String carbonHome = System.getProperty(Constant.CARBON_HOME);
         try {
-            File[] spFolders = new File(carbonHome + Constant.ANALYTICS_SERVER_PROFILE_PATH + Constant.SUPER_TENANT_ID).listFiles();
+            String zipPath = Paths.get(carbonHome,
+                    new String[]{"wso2", "business-process", "repository", "deployment", "server", "bpel"}).toString();
+            File[] spZipFiles = new File(zipPath).listFiles();
+            if (spZipFiles != null) {
+                for (File zipFile : spZipFiles) {
+                    if (zipFile.getName().toLowerCase().endsWith(".zip")) {
+                        String extractedFolderPath = zipPath + "/Extracted_" + zipFile.getName().replace(".zip", "");
+                        Utility.unZipIt(zipFile.getAbsolutePath(), extractedFolderPath);
+                        String sourceFolderPath = extractedFolderPath + File.separator
+                                + zipFile.getName().replace(".zip", "");
+                        ServerProfileDAO.getInstance().modifyInsideExtractedFolder(sourceFolderPath);
+                        if (ServerProfileDAO.getInstance().isModified) {
+                            Utility.delete(zipFile);
+                            List<String> files = Utility.generateFileList(sourceFolderPath);
+                            Utility.zipIt(sourceFolderPath, zipFile.getAbsolutePath(), files);
+                        }
+                        Utility.delete(new File(extractedFolderPath));
+                    }
+                }
+            }
+
+            File[] spFolders = new File(Paths.get(carbonHome,
+                    new String[]{"wso2", "business-process", "repository", "bpel", Constant.SUPER_TENANT_ID + ""})
+                    .toString()).listFiles();
             processSPFiles(spFolders);
         } catch (Exception e) {
             log.error("Error while updating mediator password for super tenant", e);
         }
     }
 
+
     private void updateTenantConfigs() {
-        Tenant[] tenants;
         String carbonHome = System.getProperty(Constant.CARBON_HOME);
         try {
-            tenants = MigrationServiceDataHolder.getRealmService().getTenantManager().getAllTenants();
-            boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));
-            for (Tenant tenant : tenants) {
-                if (isIgnoreForInactiveTenants && !tenant.isActive()) {
-                    log.info("Tenant " + tenant.getDomain() + " is inactive. Skipping secondary userstore migration!");
-                    continue;
-                }
+            String tenantsPath = Paths.get(carbonHome,
+                    new String[]{"wso2", "business-process", "repository", "tenants"}).toString();
+            File[] tenantFolders = new File(tenantsPath).listFiles();
+            if (tenantFolders != null) {
+                for (File tenantFolder : tenantFolders) {
+                    String zipPath = Paths.get(tenantFolder.getAbsolutePath(),
+                            new String[]{"bpel"}).toString();
+                    File[] spZipFiles = new File(zipPath).listFiles();
+                    if (spZipFiles != null) {
+                        for (File zipFile : spZipFiles) {
+                            if (zipFile.getName().toLowerCase().endsWith(".zip")) {
+                                String extractedFolderPath = zipPath + "/Extracted_"
+                                        + zipFile.getName().replace(".zip", "");
+                                Utility.unZipIt(zipFile.getAbsolutePath(), extractedFolderPath);
+                                String sourceFolderPath = extractedFolderPath + File.separator
+                                        + zipFile.getName().replace(".zip", "");
+                                ServerProfileDAO.getInstance().modifyInsideExtractedFolder(sourceFolderPath);
+                                if (ServerProfileDAO.getInstance().isModified) {
+                                    Utility.delete(zipFile);
+                                    List<String> files = Utility.generateFileList(sourceFolderPath);
+                                    Utility.zipIt(sourceFolderPath, zipFile.getAbsolutePath(), files);
+                                }
+                                Utility.delete(new File(extractedFolderPath));
+                            }
+                        }
+                    }
 
-                File[] spFolders = new File(carbonHome + Constant.ANALYTICS_SERVER_PROFILE_PATH + tenant.getId()).listFiles();
-                processSPFiles(spFolders);
+                    File[] spFolders = new File(Paths.get(carbonHome,
+                            new String[]{"wso2", "business-process", "repository", "bpel", tenantFolder.getName() + ""})
+                            .toString()).listFiles();
+                    processSPFiles(spFolders);
+                }
             }
-        } catch (Exception e) {
-            log.error("Error while updating entitlement mediator password for tenant", e);
+        } catch (MigrationClientException e) {
+            log.error("Error while updating server profile mediator password for tenant", e);
         }
     }
 
@@ -95,62 +131,10 @@ public class ServerProfileMigrator extends Migrator {
                 if (spFiles != null) {
                     for (File spFile : spFiles) {
                         if (spFile.isFile() && spFile.getName().toLowerCase().endsWith(".xml")) {
-                            transformSPPassword(spFile.getAbsolutePath());
+                            ServerProfileDAO.getInstance().transformSPPassword(spFile.getAbsolutePath());
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private void transformSPPassword(String filePath) throws MigrationClientException {
-        isModified = false;
-        XMLStreamReader parser = null;
-        FileInputStream stream = null;
-        try {
-            log.info("Migrating password in: " + filePath);
-            stream = new FileInputStream(filePath);
-            parser = XMLInputFactory.newInstance().createXMLStreamReader(stream);
-            StAXOMBuilder builder = new StAXOMBuilder(parser);
-            OMElement documentElement = builder.getDocumentElement();
-
-            Iterator it = documentElement.getChildElements();
-            String newEncryptedPassword = null;
-            while (it.hasNext()) {
-                OMElement element = (OMElement) it.next();
-                if ("true".equals(element.getAttributeValue(Constant.SECURE_PASSWORD_Q))) {
-                    String password = element.getAttributeValue(Constant.PASSWORD_Q);
-                    newEncryptedPassword = Utility.getNewEncryptedValue(password);
-                    if (StringUtils.isNotEmpty(newEncryptedPassword)) {
-                        element.getAttribute(Constant.PASSWORD_Q).setAttributeValue(newEncryptedPassword);
-                    }
-                }
-            }
-
-            if (newEncryptedPassword != null) {
-                OutputStream outputStream = new FileOutputStream(new File(filePath));
-                documentElement.serialize(outputStream);
-            }
-        } catch (XMLStreamException | FileNotFoundException e) {
-            new MigrationClientException("Error while writing the file: " + e);
-        } catch (CryptoException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (parser != null) {
-                    parser.close();
-                }
-                if (stream != null) {
-                    try {
-                        if (stream != null) {
-                            stream.close();
-                        }
-                    } catch (IOException e) {
-                        log.error("Error occurred while closing Input stream", e);
-                    }
-                }
-            } catch (XMLStreamException ex) {
-                log.error("Error while closing XML stream", ex);
             }
         }
     }

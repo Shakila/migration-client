@@ -5,15 +5,12 @@ import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
 import org.wso2.carbon.core.util.CryptoException;
 import org.wso2.carbon.ei.migration.MigrationClientException;
 import org.wso2.carbon.ei.migration.service.Migrator;
 import org.wso2.carbon.ei.migration.util.Constant;
 import org.wso2.carbon.ei.migration.util.Utility;
 
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -35,7 +32,7 @@ public class InputOutputDataMigration extends Migrator {
     }
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         log.info(Constant.MIGRATION_LOG + "Password transformation starting on Event Publisher and Receiver.");
 
         String carbonPath = System.getProperty(Constant.CARBON_HOME);
@@ -47,23 +44,23 @@ public class InputOutputDataMigration extends Migrator {
         return new File(path);
     }
 
-    private static void migratePublishers(String carbonHome) throws MigrationClientException {
+    private static void migratePublishers(String carbonHome) {
         File publisherPath = readFiles(carbonHome + Constant.EVENT_PUBLISHER_PATH);
         try {
             migrateData(publisherPath);
             log.info("Migrating publishers was successful");
         } catch (MigrationClientException e) {
-            throw new MigrationClientException(e.getMessage());
+            log.error("Error while migrating publishers: " + e.getMessage());
         }
     }
 
-    private static void migrateReceivers(String carbonHome) throws MigrationClientException {
+    private static void migrateReceivers(String carbonHome) {
         File receiverPath = readFiles(carbonHome + Constant.EVENT_RECIEVER_PATH);
         try {
             migrateData(receiverPath);
             log.info("Migrating receivers was successful");
         } catch (MigrationClientException e) {
-            throw new MigrationClientException("Error while migrating receivers : " + e);
+            log.error("Error while migrating receivers : " + e);
         }
     }
 
@@ -101,10 +98,8 @@ public class InputOutputDataMigration extends Migrator {
                     }
                 }
             }
-        } catch (IOException | CryptoException e) {
-            new MigrationClientException(e.getMessage());
-        } catch (XMLStreamException e) {
-            e.printStackTrace();
+        } catch (IOException | CryptoException | XMLStreamException e) {
+            throw new MigrationClientException(e.getMessage());
         }
     }
 }

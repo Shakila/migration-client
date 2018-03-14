@@ -30,7 +30,6 @@ import org.wso2.carbon.ei.migration.util.Constant;
 import org.wso2.carbon.ei.migration.util.Utility;
 import org.wso2.carbon.user.api.Tenant;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -48,7 +47,7 @@ public class UserStorePasswordMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(UserStorePasswordMigrator.class);
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         log.info(Constant.MIGRATION_LOG + "Migration starting on Secondary User Stores");
         updateSuperTenantConfigs();
         updateTenantConfigs();
@@ -65,8 +64,8 @@ public class UserStorePasswordMigrator extends Migrator {
                     continue;
                 }
                 File[] userstoreConfigs = getUserStoreConfigFiles(tenant.getId());
-                for(File file : userstoreConfigs) {
-                    if(file.isFile()){
+                for (File file : userstoreConfigs) {
+                    if (file.isFile()) {
                         updatePassword(file.getAbsolutePath());
                     }
                 }
@@ -79,8 +78,8 @@ public class UserStorePasswordMigrator extends Migrator {
     private void updateSuperTenantConfigs() {
         try {
             File[] userstoreConfigs = getUserStoreConfigFiles(Constant.SUPER_TENANT_ID);
-            for(File file : userstoreConfigs) {
-                if(file.isFile()){
+            for (File file : userstoreConfigs) {
+                if (file.isFile()) {
                     updatePassword(file.getAbsolutePath());
                 }
             }
@@ -93,7 +92,7 @@ public class UserStorePasswordMigrator extends Migrator {
 
         String carbonHome = System.getProperty(Constant.CARBON_HOME);
         String userStorePath;
-        if(tenantId == Constant.SUPER_TENANT_ID) {
+        if (tenantId == Constant.SUPER_TENANT_ID) {
             userStorePath = Paths.get(carbonHome,
                     new String[]{"repository", "deployment", "server", "userstores"}).toString();
         } else {
@@ -118,8 +117,8 @@ public class UserStorePasswordMigrator extends Migrator {
             String newEncryptedPassword = null;
             while (it.hasNext()) {
                 OMElement element = (OMElement) it.next();
-                if ("password".equals(element.getAttributeValue(new QName("name"))) ||
-                        "ConnectionPassword".equals(element.getAttributeValue(new QName("name")))) {
+                if (Constant.PASSWORD.equals(element.getAttributeValue(Constant.NAME_Q)) ||
+                        Constant.CONNECTION_PASSWORD.equals(element.getAttributeValue(Constant.NAME_Q))) {
                     String encryptedPassword = element.getText();
                     newEncryptedPassword = Utility.getNewEncryptedValue(encryptedPassword);
                     if (StringUtils.isNotEmpty(newEncryptedPassword)) {
@@ -136,17 +135,16 @@ public class UserStorePasswordMigrator extends Migrator {
             log.error("Error while updating password for: " + filePath);
         } finally {
             try {
-                if(parser != null) {
+                if (parser != null) {
                     parser.close();
                 }
-                if(stream != null) {
+                if (stream != null) {
                     try {
-                        if (stream != null) {
-                            stream.close();
-                        }
+                        stream.close();
                     } catch (IOException e) {
                         log.error("Error occurred while closing Input stream", e);
-                    }                }
+                    }
+                }
             } catch (XMLStreamException ex) {
                 log.error("Error while closing XML stream", ex);
             }

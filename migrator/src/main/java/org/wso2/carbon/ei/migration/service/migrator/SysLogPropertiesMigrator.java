@@ -30,22 +30,21 @@ public class SysLogPropertiesMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(SysLogPropertiesMigrator.class);
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         migrateSysLogPropertiesPassword();
     }
 
-    private void migrateSysLogPropertiesPassword() throws MigrationClientException {
+    private void migrateSysLogPropertiesPassword() {
         log.info(Constant.MIGRATION_LOG + "Migration starting on SYSLOG_PROPERTIES file");
         boolean isIgnoreForInactiveTenants = Boolean.parseBoolean(System.getProperty(Constant.IGNORE_INACTIVE_TENANTS));
         try {
             RegistryDataManager.getInstance().migrateSysLogPropertyPassword(isIgnoreForInactiveTenants);
         } catch (UserStoreException e) {
-            throw new MigrationClientException("Error while retrieving all tenants. ", e);
+            log.error("Error while retrieving all tenants. ", e);
         } catch (RegistryException e) {
-            throw new MigrationClientException("Error while accessing registry and loading SYSLOG_PROPERTIES file. ",
-                    e);
+            log.error("Error while accessing registry and loading SYSLOG_PROPERTIES file.", e);
         } catch (CryptoException e) {
-            throw new MigrationClientException("Error while encrypting/decrypting SYSLOG_PROPERTIES password. ", e);
+            log.error("Error while encrypting/decrypting SYSLOG_PROPERTIES password. ", e);
         }
     }
 }

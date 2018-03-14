@@ -28,6 +28,7 @@ import org.wso2.carbon.ei.migration.service.dao.EntitlementMediatorDAO;
 import org.wso2.carbon.ei.migration.util.Constant;
 import org.wso2.carbon.ei.migration.util.Utility;
 import org.wso2.carbon.user.api.Tenant;
+import org.wso2.carbon.user.api.UserStoreException;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -50,7 +51,7 @@ public class EntitlementMediatorMigrator extends Migrator {
     private boolean isModified = false;
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         transformPasswordInAllEntitlementMediators();
     }
 
@@ -58,9 +59,9 @@ public class EntitlementMediatorMigrator extends Migrator {
      * This method will transform the Entitlement Mediator password encrypted with old encryption algorithm to new encryption
      * algorithm.
      *
-     * @throws MigrationClientException
+     * @throws MigrationClientException migration client exception
      */
-    private void transformPasswordInAllEntitlementMediators() throws MigrationClientException {
+    private void transformPasswordInAllEntitlementMediators() {
         log.info(Constant.MIGRATION_LOG + "Migration starting on Entitlement Mediators.");
         updateSuperTenantConfigs();
         updateTenantConfigs();
@@ -79,7 +80,7 @@ public class EntitlementMediatorMigrator extends Migrator {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (MigrationClientException | FileNotFoundException e) {
             log.error("Error while updating mediator password for super tenant", e);
         }
     }
@@ -107,7 +108,7 @@ public class EntitlementMediatorMigrator extends Migrator {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (MigrationClientException | FileNotFoundException | UserStoreException e) {
             log.error("Error while updating entitlement mediator password for tenant", e);
         }
     }
@@ -128,7 +129,7 @@ public class EntitlementMediatorMigrator extends Migrator {
                 documentElement.serialize(outputStream);
             }
         } catch (XMLStreamException | FileNotFoundException e) {
-            new MigrationClientException("Error while writing the file: " + e);
+            throw new MigrationClientException("Error while writing the file: " + e);
         } finally {
             try {
                 if (parser != null) {
@@ -136,9 +137,7 @@ public class EntitlementMediatorMigrator extends Migrator {
                 }
                 if (stream != null) {
                     try {
-                        if (stream != null) {
                             stream.close();
-                        }
                     } catch (IOException e) {
                         log.error("Error occurred while closing Input stream", e);
                     }
@@ -149,7 +148,7 @@ public class EntitlementMediatorMigrator extends Migrator {
         }
     }
 
-    private boolean loopAndEncrypt(Iterator it) throws MigrationClientException {
+    private void loopAndEncrypt(Iterator it) throws MigrationClientException {
         while (it.hasNext()) {
             OMElement element = (OMElement) it.next();
             if (element.getAttributeValue(Constant.REMOTE_SERVICE_PASSWORD_Q) != null
@@ -166,12 +165,11 @@ public class EntitlementMediatorMigrator extends Migrator {
                         isModified = true;
                     }
                 } catch (CryptoException e) {
-                    new MigrationClientException(e.getMessage());
+                    throw new MigrationClientException(e.getMessage());
                 }
             } else if (element.getChildElements().hasNext()) {
                 loopAndEncrypt(element.getChildElements());
             }
         }
-        return isModified;
     }
 }

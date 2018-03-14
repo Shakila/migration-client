@@ -52,7 +52,6 @@ public class MigrationClientImpl implements MigrationClient {
 
             for (Migrator migrator : migrators) {
                 migrator.migrate();
-                continue;
             }
             log.info(Constant.MIGRATION_LOG + "Execution was done.");
         } catch (Throwable e) {

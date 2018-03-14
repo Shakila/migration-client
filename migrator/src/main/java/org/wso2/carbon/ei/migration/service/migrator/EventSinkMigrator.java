@@ -35,7 +35,7 @@ public class EventSinkMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(EventSinkMigrator.class);
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         transformPasswordInAllEventSinks();
     }
 
@@ -43,7 +43,7 @@ public class EventSinkMigrator extends Migrator {
      * This method will transform the event sink password encrypted with old encryption algorithm to new encryption
      * algorithm.
      */
-    public void transformPasswordInAllEventSinks() throws MigrationClientException {
+    private void transformPasswordInAllEventSinks() {
 
         log.info(Constant.MIGRATION_LOG + "Password transformation starting on Event Sink.");
 
@@ -53,8 +53,8 @@ public class EventSinkMigrator extends Migrator {
             if (eventSinksList.size() > 0) {
                 this.transformPasswordFromOldToNewEncryption(eventSinksList);
             }
-        } catch (EventSinkException e) {
-            throw new MigrationClientException("Password transformation failed with ERROR: " + e);
+        } catch (EventSinkException | MigrationClientException e) {
+            log.error("Password transformation failed with ERROR: " + e);
         }
     }
 

@@ -16,7 +16,6 @@
 package org.wso2.carbon.ei.migration.service.migrator;
 
 import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,17 +31,8 @@ import org.wso2.carbon.registry.core.Resource;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.Tenant;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 
@@ -53,7 +43,7 @@ public class DatasourceMigrator extends Migrator {
     private static final Log log = LogFactory.getLog(DatasourceMigrator.class);
 
     @Override
-    public void migrate() throws MigrationClientException {
+    public void migrate() {
         transformPasswordInRegistryDatasources();
     }
 
@@ -61,7 +51,7 @@ public class DatasourceMigrator extends Migrator {
      * This method will transform the data source password encrypted with old encryption algorithm to new encryption
      * algorithm.
      */
-    public void transformPasswordInRegistryDatasources() throws MigrationClientException {
+    private void transformPasswordInRegistryDatasources() {
         log.info(Constant.MIGRATION_LOG + "Password transformation starting on DataSource.");
         //In tenants
         Tenant[] tenants;
@@ -80,11 +70,12 @@ public class DatasourceMigrator extends Migrator {
             List<Resource> dataSources = DataSourceDAO.getInstance().getAllDataSources(Constant.SUPER_TENANT_ID);
             this.updatePasswordInRegistryDataSources(Constant.SUPER_TENANT_ID, dataSources);
         } catch (Exception e) {
-            log.error("Error while updating secondary user store password for super tenant", e);
+            log.error("Error while updating secondary data source password for super tenant", e);
         }
     }
 
-    private void updatePasswordInRegistryDataSources(int tenantId, List<Resource> dataSources) throws MigrationClientException {
+    private void updatePasswordInRegistryDataSources(int tenantId, List<Resource> dataSources)
+            throws MigrationClientException {
 
         for (Resource dataSource : dataSources) {
             try {
@@ -106,62 +97,6 @@ public class DatasourceMigrator extends Migrator {
                 }
             } catch (XMLStreamException | CryptoException | RegistryException | DataSourceException e) {
                 throw new MigrationClientException(e.getMessage());
-            }
-        }
-    }
-
-    private void updateDatasourcePasswordInFileSystem(String filePath) throws MigrationClientException {
-        XMLStreamReader parser = null;
-        FileInputStream stream = null;
-        try {
-            log.info("Migrating password in: " + filePath);
-            stream = new FileInputStream(filePath);
-            parser = XMLInputFactory.newInstance().createXMLStreamReader(stream);
-            StAXOMBuilder builder = new StAXOMBuilder(parser);
-            OMElement documentElement = builder.getDocumentElement();
-            Iterator it = ((OMElement) documentElement.getChildrenWithName(Constant.DATA_SOURCES_Q).next())
-                    .getChildrenWithName(Constant.DATA_SOURCE_Q);
-            String newEncryptedPassword = null;
-            while (it.hasNext()) {
-                OMElement element = (OMElement) it.next();
-                Iterator pit = ((OMElement) ((OMElement) element.getChildrenWithName(Constant.DEFINITION_Q).next())
-                        .getChildrenWithName(Constant.CONFIGURATION_Q).next()).getChildrenWithName(Constant.PASSWORD_Q);
-                while (pit.hasNext()) {
-                    OMElement passwordElement = (OMElement) pit.next();
-                    String password = passwordElement.getText();
-                    if (StringUtils.isNotEmpty(password)) {
-                        newEncryptedPassword = Utility.getNewEncryptedValue(password);
-                        if (StringUtils.isNotEmpty(newEncryptedPassword)) {
-                            passwordElement.setText(newEncryptedPassword);
-                        }
-                    }
-                }
-            }
-
-            if (newEncryptedPassword != null) {
-                OutputStream outputStream = new FileOutputStream(filePath);
-                documentElement.serialize(outputStream);
-            }
-        } catch (XMLStreamException | FileNotFoundException e) {
-            new MigrationClientException("Error while writing the file: " + e);
-        } catch (CryptoException e) {
-            new MigrationClientException(e.getMessage());
-        } finally {
-            try {
-                if (parser != null) {
-                    parser.close();
-                }
-                if (stream != null) {
-                    try {
-                        if (stream != null) {
-                            stream.close();
-                        }
-                    } catch (IOException e) {
-                        log.error("Error occurred while closing Input stream", e);
-                    }
-                }
-            } catch (XMLStreamException ex) {
-                log.error("Error while closing XML stream", ex);
             }
         }
     }
