@@ -54,8 +54,11 @@ public class Constant {
     public static final String SERVICE_PRINCIPAL_PASSWORD = "service.principal.password";
     public static final String CARBON_SEC_CONFIG = "CarbonSecConfig";
     public static final String KERBEROS = "Kerberos";
-    public static final QName NAME_Q = new QName("name");
     public static final String SERVICE_GROUPS_PATH = "/repository/axis2/service-groups/";
     public static final String STS_SERVICE_GROUP = "org.wso2.carbon.sts";
     public static final String SECURITY_POLICY_RESOURCE_PATH = "/services/wso2carbon-sts/policies/";
+    public static final QName NAME_Q = new QName("name");
+    public static final String CONNECTION_PASSWORD = "ConnectionPassword";
+
+    public static final QName SECURE_PASSWORD_Q = new QName("securePassword");
 }

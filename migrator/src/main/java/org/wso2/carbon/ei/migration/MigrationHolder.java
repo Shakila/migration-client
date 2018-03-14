@@ -38,6 +38,7 @@ public class MigrationHolder {
         migrationList.add(new InputOutputDataMigration());
         migrationList.add(new KeyStorePasswordMigrator());
         migrationList.add(new SecurityPolicyPasswordMigrator());
+        migrationList.add(new ServerProfileMigrator());
         migrationList.add(new SysLogPropertiesMigrator());
         migrationList.add(new UserStorePasswordMigrator());
     }

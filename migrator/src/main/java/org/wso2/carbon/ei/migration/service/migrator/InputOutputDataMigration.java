@@ -70,8 +70,6 @@ public class InputOutputDataMigration extends Migrator {
     private static void migrateData(File folder) throws MigrationClientException {
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
-        DocumentBuilder builder;
-        Document doc;
         XMLStreamReader parser;
         FileInputStream stream;
         try {
@@ -81,10 +79,9 @@ public class InputOutputDataMigration extends Migrator {
                     if (fileEntry.isFile() && fileEntry.getName().toLowerCase().endsWith(".xml")) {
                         stream = new FileInputStream(fileEntry);
                         parser = XMLInputFactory.newInstance().createXMLStreamReader(stream);
-                        StAXOMBuilder builder1 = new StAXOMBuilder(parser);
-                        OMElement documentElement = builder1.getDocumentElement();
+                        StAXOMBuilder builder = new StAXOMBuilder(parser);
+                        OMElement documentElement = builder.getDocumentElement();
                         Iterator it = ((OMElement) documentElement.getChildrenWithName(Constant.TO_Q).next()).getChildElements();
-                        //documentElement.getChildElements();
                         String newEncryptedPassword = null;
                         while (it.hasNext()) {
                             OMElement element = (OMElement) it.next();

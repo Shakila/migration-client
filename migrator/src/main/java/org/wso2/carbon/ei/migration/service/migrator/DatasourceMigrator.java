@@ -54,30 +54,7 @@ public class DatasourceMigrator extends Migrator {
 
     @Override
     public void migrate() throws MigrationClientException {
-        transformDataSourcePasswordInFileSystem();
         transformPasswordInRegistryDatasources();
-    }
-
-    /**
-     * This method will transform the data source password encrypted with old encryption algorithm to new encryption
-     * algorithm.
-     */
-    public void transformDataSourcePasswordInFileSystem() throws MigrationClientException {
-        String carbonHome = System.getProperty(Constant.CARBON_HOME);
-        String datasourcePath = Paths.get(carbonHome,
-                new String[]{"conf", "datasources"}).toString();
-        File[] files = new File(datasourcePath).listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile() && file.getName().toLowerCase().endsWith(".xml")) {
-                    try {
-                        this.updateDatasourcePasswordInFileSystem(file.getAbsolutePath());
-                    } catch (MigrationClientException e) {
-                        log.error("Password transformation in file system failed with ERROR: " + e);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -117,12 +94,14 @@ public class DatasourceMigrator extends Migrator {
                         .getChildrenWithName(Constant.CONFIGURATION_Q).next()).getChildrenWithName(Constant.PASSWORD_Q);
                 while (pit.hasNext()) {
                     OMElement passwordElement = (OMElement) pit.next();
-                    String password = passwordElement.getText();
-                    String newEncryptedPassword = Utility.getNewEncryptedValue(password);
-                    if (StringUtils.isNotEmpty(newEncryptedPassword)) {
-                        passwordElement.setText(newEncryptedPassword);
-                        dataSource.setContent(omElement.toString().getBytes());
-                        DataSourceDAO.saveDataSource(tenantId, dataSource);
+                    if ("true".equals(passwordElement.getAttributeValue(Constant.ENCRYPTED_Q))) {
+                        String password = passwordElement.getText();
+                        String newEncryptedPassword = Utility.getNewEncryptedValue(password);
+                        if (StringUtils.isNotEmpty(newEncryptedPassword)) {
+                            passwordElement.setText(newEncryptedPassword);
+                            dataSource.setContent(omElement.toString().getBytes());
+                            DataSourceDAO.saveDataSource(tenantId, dataSource);
+                        }
                     }
                 }
             } catch (XMLStreamException | CryptoException | RegistryException | DataSourceException e) {
